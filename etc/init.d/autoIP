@@ -7,3 +7,17 @@ ubus monitor network.interface | while read line; do
         /usr/bin/your-script.sh
     fi
 done
+
+# 豆包生成，当检测到WAN口与lan口网段一致时，自动修改lan口ip地址
+wanaddr=$(ubus call network.interface.wan status | grep "address" | grep -oe '(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}' | grep -oe '(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}\.')
+lanaddr=$(ubus call network.interface.lan status | grep "address" | grep -oe '(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}' | grep -oe '(0-9){1,3}\.(0-9){1,3}\.(0-9){1,3}\.')
+echo "$wanaddr $lanaddr" > /dev/console
+if [ "x$wanaddr" == "x$lanaddr" ]; then
+    if [ "x$wanaddr" == "x192.168.10.1" ]; then
+        uci set network.lan.ipaddr='193.168.20.1'
+    else
+        uci set network.lan.ipaddr='193.168.10.1'
+    fi
+    uci commit
+    /etc/init.d/network restart
+fi
