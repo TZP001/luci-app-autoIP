@@ -21,3 +21,15 @@ if [ "x$wanaddr" == "x$lanaddr" ]; then
     uci commit
     /etc/init.d/network restart
 fi
+
+# 豆包生成，当检测到WAN口与lan口网段一致时，自动修改lan口ip地址
+# 在 /etc/hotplug.d/iface 目录下创建名为 99-auto-change-lan-ip.sh 的脚本
+if [ "$action" == "ifup" ] && [ "$interface" == "wan" ]; then
+    wan_ip=$(ifconfig $interface | grep "inet addr" | awk '{print $2}' | cut -d ':' -f 2)
+    # 假设当WAN口IP地址在192.168.0.0/16网段时修改LAN口IP
+    if echo $wan_ip | grep -qE '192.168\.[0-9]{1,3}\.[0-9]{1,3}'; then
+        uci set network.lan.ipaddr='10.0.0.1'
+        uci commit
+        /etc/init.d/network restart
+    fi
+fi
