@@ -33,3 +33,23 @@ if [ "$action" == "ifup" ] && [ "$interface" == "wan" ]; then
         /etc/init.d/network restart
     fi
 fi
+
+# 发送消息部分
+KEY_MSG=""
+WEBHOOK_TOKEN=""
+WEBHOOK_URL="https://oapi.dingtalk.com/robot/send?access_token=""$WEBHOOK_TOKEN"
+ 
+function sendMessage(){
+    # 钉钉群组自定义机器人的Webhook URL
+
+    MESSAGE="$KEY_MSG\n""$1"
+    
+    # 使用curl发送POST请求
+    curl -H "Content-Type: application/json" -X POST -d "
+    {
+        \"msgtype\": \"text\",
+        \"text\": {
+            \"content\": \"$MESSAGE\"
+        }
+    }" $WEBHOOK_URL
+}
