@@ -1,0 +1,9 @@
+#!/bin/bash
+ubus monitor network.interface | while read line; do
+    echo "$line" | grep -q '{"interface":"wan","action":"up"}'
+    if [ $? -eq 0 ]; then
+        logger -t wan-script "WAN interface is up, running your script here"
+        # 在此处添加你要执行的脚本命令或调用其他脚本
+        /usr/bin/your-script.sh
+    fi
+done
